@@ -2,6 +2,7 @@
 ENV ?= ./.env
 COMPOSE := docker compose --env-file $(ENV) -f docker-compose.yml -f docker-compose.dev.yml
 SERVICES := gateway auth profiles posts comments notifications media
+ACTIVE_SERVICES := $(filter-out $(EXCLUDE),$(SERVICES))
 
 # Helper: read KEY from $(ENV)
 define GET_ENV
@@ -46,6 +47,9 @@ up up-d:
 	$(COMPOSE) up --build -d
 	@$(MAKE) ps
 
+up-ex:
+	$(COMPOSE) up -d $(filter-out $(EXCLUDE),$(SERVICES))
+
 down:
 	$(COMPOSE) down
 
@@ -75,22 +79,11 @@ sh:
 	$(COMPOSE) exec $(SERVICE) /bin/sh || $(COMPOSE) exec $(SERVICE) /bin/bash
 
 # ---- Health checks ----
-define curl_ok
-	@set -e; \
-	url="$$1"; name="$$2"; \
-	out=$$(curl -sS "$$url" || true); \
-	if echo "$$out" | grep -q '"status":"ok"\|"status":"ready"'; then \
-		printf '✓ %s -> %s\n' "$$name" "$$out"; \
-	else \
-		printf '✗ %s -> %s\n' "$$name" "$$out"; exit 1; \
-	fi
-endef
-
 health: health-live health-ready
 
 health-live:
 	@set -e; set -a; . $(ENV); set +a; \
-	for name in gateway auth profiles posts comments notifications media; do \
+	for name in $(ACTIVE_SERVICES); do \
 	  case $$name in \
 	    gateway) port=$$GATEWAY_PORT ;; \
 	    auth) port=$$AUTH_PORT ;; \
@@ -111,7 +104,7 @@ health-live:
 
 health-ready:
 	@set -e; set -a; . $(ENV); set +a; \
-	for name in gateway auth profiles posts comments notifications media; do \
+	for name in $(ACTIVE_SERVICES); do \
 	  case $$name in \
 	    gateway) port=$$GATEWAY_PORT ;; \
 	    auth) port=$$AUTH_PORT ;; \
