@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm.session import Session
 
 from app import models
@@ -10,7 +11,7 @@ from passlib.context import CryptContext
 from app.schemas import (
     TokenPair, RegisterResponse, RegisterRequest, UserOut, LoginRequest, RefreshRequest
 )
-from app.services import auth_service, token_service
+from app.services import auth_service, token_service, session_service
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -27,10 +28,26 @@ def register_user(payload: RegisterRequest, db: Session = Depends(get_session)):
 
 
 @router.post('/login', response_model=TokenPair)
-def login_user(payload: LoginRequest, db: Session = Depends(get_session)):
-    return auth_service.login_user(payload, db)
+def login_user(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    request: Request = None,
+    db: Session = Depends(get_session)
+):
+    return auth_service.login_user(form_data, request, db)
 
 
 @router.post('/refresh', response_model=TokenPair)
 def refresh_token(payload: RefreshRequest):
     return token_service.refresh_token(payload)
+
+
+@router.post('/logout', status_code=204)
+def logout_user(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_session)):
+    session_service.revoke_session(db, current_user.id)
+    return
+
+
+@router.post('/logout-all', status_code=204)
+def logout_all_user_sessions(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_session)):
+    session_service.revoke_all_sessions_for_user(db, str(current_user.id))
+    return
