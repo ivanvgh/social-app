@@ -8,6 +8,7 @@ from app.core.settings import settings
 from app.models import User
 from app.schemas import TokenPair, RegisterRequest, LoginRequest
 from app.security import verify_password
+from app.services.rate_limit_service import check_rate_limits
 from app.services.session_service import create_session
 from app.services.token_service import create_access_token, create_refresh_token
 from app.services.user_service import get_user_by_email, create_user
@@ -36,6 +37,15 @@ def register_user(payload: RegisterRequest, db: Session):
 
 
 def login_user(payload: LoginRequest, request: Request, db: Session) -> TokenPair:
+    check_rate_limits(
+        request,
+        user_identifier=payload.email,
+        ip_limit=5,
+        user_limit=10,
+        seconds=60,
+        key_prefix='login'
+    )
+
     user = db.query(User).filter_by(email=payload.email).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
