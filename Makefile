@@ -1,6 +1,7 @@
 # ---- Config ----
 ENV ?= ./.env
 COMPOSE := docker compose --env-file $(ENV) -f docker-compose.yml -f docker-compose.dev.yml
+DB_SERVICES := postgres mongo redis
 SERVICES := gateway auth profiles posts comments notifications media
 ACTIVE_SERVICES := $(filter-out $(EXCLUDE),$(SERVICES))
 
@@ -23,19 +24,24 @@ MEDIA_PORT    := $(or $(call GET_ENV,MEDIA_PORT),8006)
 
 help:
 	@echo 'Usage:'
-	@echo '  make env            - Create .env from .env.example if missing'
-	@echo '  make up             - Build & start all services (daemonized)'
-	@echo '  make down           - Stop & remove containers'
-	@echo '  make build          - Build all images'
-	@echo '  make ps             - Show compose status'
-	@echo '  make logs           - Show last logs for all services'
-	@echo '  make tail SERVICE=auth     - Follow logs for a single service'
-	@echo '  make restart SERVICE=auth  - Restart a single service'
-	@echo '  make re SERVICE=auth       - Rebuild+restart a single service'
-	@echo '  make sh SERVICE=auth       - Shell into a service container'
-	@echo '  make health         - Check /health/live and /health/ready'
-	@echo '  make ping           - Ping Postgres, Mongo, Redis'
-	@echo '  make clean|prune    - Cleanup (careful)'
+	@echo '  make env                          - Create .env from .env.example if missing'
+	@echo '  make up                           - Build & start all services (daemonized)'
+	@echo '  make up-ex EXCLUDE="auth profiles"- Start all except listed'
+	@echo '  make db-up SERVICES_ONLY="auth profiles" - Start databases + selected services'
+	@echo '  make down                         - Stop & remove containers'
+	@echo '  make stop                         - Stop containers (keep them)'
+	@echo '  make build                        - Build all images'
+	@echo '  make ps                           - Show compose status'
+	@echo '  make logs                         - Show last logs for all services'
+	@echo '  make tail SERVICE=auth            - Follow logs for a single service'
+	@echo '  make restart SERVICE=auth         - Restart a single service'
+	@echo '  make re SERVICE=auth              - Rebuild+restart a single service'
+	@echo '  make sh SERVICE=auth              - Shell into a service container'
+	@echo '  make health                       - Check /health/live and /health/ready'
+	@echo '  make ping                         - Ping Postgres, Mongo, Redis'
+	@echo '  make print-ports                  - Echo the mapped ports'
+	@echo '  make print-env                    - Show resolved env file path'
+	@echo '  make clean|prune                  - Cleanup (careful)'
 
 env:
 	@test -f $(ENV) || (cp .env.example $(ENV) && echo 'Created $(ENV) from .env.example')
@@ -49,6 +55,10 @@ up up-d:
 
 up-ex:
 	$(COMPOSE) up -d $(filter-out $(EXCLUDE),$(SERVICES))
+
+db-up:
+	$(COMPOSE) up -d $(DB_SERVICES) $(SERVICES_ONLY)
+	@$(MAKE) ps
 
 down:
 	$(COMPOSE) down

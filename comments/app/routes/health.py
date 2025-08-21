@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.checks import deps_ok
+from app.routes.checks import deps_ok
 
 router = APIRouter()
 
