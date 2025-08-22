@@ -48,11 +48,19 @@ services:
   gateway:
     build: { context: ./gateway }
     environment:
-      PORT: 8000
+      PORT: ${PORT}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      PROFILES_SERVICE_URL: ${PROFILES_SERVICE_URL}
+      POSTS_SERVICE_URL: ${POSTS_SERVICE_URL}
+      COMMENTS_SERVICE_URL: ${COMMENTS_SERVICE_URL}
+      NOTIFICATIONS_SERVICE_URL: ${NOTIFICATIONS_SERVICE_URL}
+      MEDIA_SERVICE_URL: ${MEDIA_SERVICE_URL}
     ports:
-      - '${GATEWAY_PORT}:8000'
+      - '${GATEWAY_PORT}:${PORT}'
     depends_on:
-      - redis
+      auth:
+        condition: service_healthy
 
   auth:
     build: { context: ./auth }
@@ -61,7 +69,13 @@ services:
       REDIS_URL: ${REDIS_URL}
       PORT: 8000
     ports:
-      - '${AUTH_PORT}:8000'
+      - '${AUTH_PORT}:${PORT}'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://localhost:8000/health/live || exit 1']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
     depends_on:
       postgres:
         condition: service_healthy

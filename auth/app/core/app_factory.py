@@ -15,7 +15,7 @@ def create_app() -> FastAPI:
         allow_methods=['*'],
         allow_headers=['*'],
     )
-    app.include_router(health_router, tags=['Health'])
+    app.include_router(health_router, prefix='/health', tags=['Health'])
     app.include_router(auth_router, prefix='/v1/auth', tags=['Auth'])
 
     return app

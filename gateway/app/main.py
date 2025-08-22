@@ -1,9 +1,17 @@
 from fastapi import FastAPI
-from app.routes.health import router as health_router
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1 import health, forward
+from app.core.settings import settings
 
-def create_app() -> FastAPI:
-    app = FastAPI(title='Gateway Service')
-    app.include_router(health_router)
-    return app
+app = FastAPI(title=settings.PROJECT_NAME)
 
-app = create_app()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
+
+app.include_router(health.router)
+app.include_router(forward.router)
