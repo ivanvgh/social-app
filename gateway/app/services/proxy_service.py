@@ -4,13 +4,10 @@ from starlette.responses import JSONResponse
 
 
 async def forward_request(
-    service_name: str,
-    api_version: str,
-    base_url: str,
-    path: str,
     request: Request,
+    base_url: str,
 ) -> Response:
-    url = f'{base_url}/{api_version}/{service_name}/{path}'
+    url = f'{base_url}{request.url.path}'
     method = request.method
     headers = dict(request.headers)
     body = await request.body()
@@ -21,7 +18,7 @@ async def forward_request(
                 method=method,
                 url=url,
                 headers=headers,
-                content=body
+                content=body,
             )
         return Response(content=resp.content, status_code=resp.status_code, headers=resp.headers)
     except httpx.RequestError:

@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import health, forward
+from app.core.logging import setup_logging
 from app.core.settings import settings
 
+
+setup_logging()
 app = FastAPI(title=settings.PROJECT_NAME)
 
 app.add_middleware(

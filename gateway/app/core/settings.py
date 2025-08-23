@@ -1,7 +1,6 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = ''
     PROJECT_NAME: str = 'Gateway'
     AUTH_SERVICE_URL: str = 'http://auth:8001'
     JWT_SECRET_KEY: str = ''
