@@ -1,9 +1,3 @@
-from fastapi import FastAPI
-from app.routes.health import router as health_router
-
-def create_app() -> FastAPI:
-    app = FastAPI(title='Auth Service')
-    app.include_router(health_router)
-    return app
+from app.core.app_factory import create_app
 
 app = create_app()

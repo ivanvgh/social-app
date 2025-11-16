@@ -32,3 +32,9 @@ docker-data/
 # IDE
 .vscode/
 .idea/
+
+# Ignore local run/debug entrypoints
+**/run.py
+
+# Optional: ignore IDE run configs
+*.run.xml
