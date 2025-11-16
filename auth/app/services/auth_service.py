@@ -40,8 +40,8 @@ def login_user(payload: LoginRequest, request: Request, db: Session) -> TokenPai
     check_rate_limits(
         request,
         user_identifier=payload.email,
-        ip_limit=5,
-        user_limit=10,
+        ip_limit=500,
+        user_limit=500,
         seconds=60,
         key_prefix='login'
     )

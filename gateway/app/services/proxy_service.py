@@ -1,7 +1,26 @@
-import httpx
 from fastapi import Request, Response
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse
+import httpx
 
+# async def forward_request(request: Request, upstream: str) -> Response:
+#     body = await request.body()
+#     headers = dict(request.headers)
+#     headers.pop('host', None)
+#
+#     async with httpx.AsyncClient(follow_redirects=True) as client:
+#         r = await client.request(request.method, f'{upstream}{request.url.path}?{request.url.query}' if request.url.query else f'{upstream}{request.url.path}', headers=headers, content=body)
+#
+#     resp = Response(content=r.content, status_code=r.status_code, media_type=r.headers.get('content-type'))
+#     for k, v in r.headers.items():
+#         lk = k.lower()
+#         if lk in {'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'transfer-encoding', 'upgrade', 'content-encoding', 'content-length'}:
+#             continue
+#         if lk == 'set-cookie':
+#             for sc in r.headers.get_list('set-cookie'):
+#                 resp.headers.append('set-cookie', sc)
+#         else:
+#             resp.headers[k] = v
+#     return resp
 
 async def forward_request(
     request: Request,

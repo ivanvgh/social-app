@@ -27,8 +27,10 @@ def check_rate_limits(
     request: Request,
     *,
     user_identifier: str | None = None,
-    ip_limit: int = 5,
-    user_limit: int = 10,
+    # ip_limit: int = 5,
+    # user_limit: int = 10,
+    ip_limit: int = 9999,
+    user_limit: int = 9999,
     seconds: int = 60,
     key_prefix: str = 'login'
 ) -> None:
